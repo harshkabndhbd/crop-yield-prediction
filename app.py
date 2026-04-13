@@ -4,28 +4,42 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
-
-app = Flask(__name__)
-
-# Load model
 import zipfile
 import os
 
-with zipfile.ZipFile('model/model.zip', 'r') as zip_ref:
-    zip_ref.extractall('model')
+app = Flask(__name__)
 
+# -------------------------------
+# 📦 Extract model.zip if needed
+# -------------------------------
+if not os.path.exists('model/model.pkl'):
+    with zipfile.ZipFile('model/model.zip', 'r') as zip_ref:
+        zip_ref.extractall('model')
+
+# -------------------------------
+# 🔮 Load model and columns
+# -------------------------------
 model = pickle.load(open('model/model.pkl', 'rb'))
 model_columns = pickle.load(open('model/columns.pkl', 'rb'))
 
-# Load dataset
+# -------------------------------
+# 📊 Load dataset
+# -------------------------------
 df = pd.read_csv('data/yield_df.csv')
+
 countries = sorted(df['Area'].unique())
 crops = sorted(df['Item'].unique())
 
+# -------------------------------
+# 🏠 Home route
+# -------------------------------
 @app.route('/')
 def home():
     return render_template('index.html', countries=countries, crops=crops)
 
+# -------------------------------
+# 🔮 Prediction route
+# -------------------------------
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
@@ -50,7 +64,9 @@ def predict():
 
         prediction = model.predict(input_df)[0]
 
-        # Graph (Predicted vs Average)
+        # -------------------------------
+        # 📊 Graph (Predicted vs Average)
+        # -------------------------------
         avg_yield = df['hg/ha_yield'].mean()
 
         plt.figure()
@@ -76,5 +92,8 @@ def predict():
                                crops=crops,
                                prediction_text=f'Error: {str(e)}')
 
+# -------------------------------
+# 🚀 Run app (Render compatible)
+# -------------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
