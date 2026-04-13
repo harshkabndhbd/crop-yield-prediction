@@ -6,13 +6,9 @@ from io import BytesIO
 
 app = Flask(__name__)
 
-# Dummy data for dropdowns (since model removed)
-countries = ["India", "USA", "China", "Brazil"]
-crops = ["Wheat", "Rice", "Maize", "Sugarcane"]
-
 @app.route('/')
 def home():
-    return render_template('index.html', countries=countries, crops=crops)
+    return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -23,20 +19,18 @@ def predict():
         pesticide = request.form.get('pesticide')
         temperature = request.form.get('temperature')
 
-        if not rainfall or not pesticide or not temperature:
-            return render_template('index.html',
-                                   countries=countries,
-                                   crops=crops,
-                                   error="Please fill all fields")
+        # Validation
+        if not country or not crop or not rainfall or not pesticide or not temperature:
+            return render_template('index.html', error="Please fill all fields")
 
         rainfall = float(rainfall)
         pesticide = float(pesticide)
         temperature = float(temperature)
 
-        # Dummy prediction
+        # Dummy prediction (stable)
         prediction = (rainfall * 2) + (pesticide * 3) + (temperature * 5)
 
-        # GRAPH
+        # ===== GRAPH =====
         plt.figure()
 
         labels = ['Rainfall', 'Pesticide', 'Temperature', 'Yield']
@@ -52,8 +46,6 @@ def predict():
 
         return render_template(
             'index.html',
-            countries=countries,
-            crops=crops,
             prediction=round(prediction, 2),
             graph_url=graph_url,
             selected_country=country,
