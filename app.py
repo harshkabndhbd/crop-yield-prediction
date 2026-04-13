@@ -8,6 +8,12 @@ from io import BytesIO
 app = Flask(__name__)
 
 # Load model
+import zipfile
+import os
+
+with zipfile.ZipFile('model/model.zip', 'r') as zip_ref:
+    zip_ref.extractall('model')
+
 model = pickle.load(open('model/model.pkl', 'rb'))
 model_columns = pickle.load(open('model/columns.pkl', 'rb'))
 
