@@ -6,36 +6,44 @@ from io import BytesIO
 
 app = Flask(__name__)
 
+# Dummy data for dropdowns (since model removed)
+countries = ["India", "USA", "China", "Brazil"]
+crops = ["Wheat", "Rice", "Maize", "Sugarcane"]
+
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index.html', countries=countries, crops=crops)
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
+        country = request.form.get('country')
+        crop = request.form.get('crop')
         rainfall = request.form.get('rainfall')
         pesticide = request.form.get('pesticide')
         temperature = request.form.get('temperature')
 
-        # Validate input
         if not rainfall or not pesticide or not temperature:
-            return render_template('index.html', error="Please fill all fields")
+            return render_template('index.html',
+                                   countries=countries,
+                                   crops=crops,
+                                   error="Please fill all fields")
 
         rainfall = float(rainfall)
         pesticide = float(pesticide)
         temperature = float(temperature)
 
-        # Simple prediction logic
+        # Dummy prediction
         prediction = (rainfall * 2) + (pesticide * 3) + (temperature * 5)
 
-        # ===== GRAPH =====
+        # GRAPH
         plt.figure()
 
         labels = ['Rainfall', 'Pesticide', 'Temperature', 'Yield']
         values = [rainfall, pesticide, temperature, prediction]
 
         plt.bar(labels, values)
-        plt.title("Input vs Predicted Yield")
+        plt.title(f"{crop} Yield in {country}")
 
         img = BytesIO()
         plt.savefig(img, format='png')
@@ -44,14 +52,18 @@ def predict():
 
         return render_template(
             'index.html',
+            countries=countries,
+            crops=crops,
             prediction=round(prediction, 2),
-            graph_url=graph_url
+            graph_url=graph_url,
+            selected_country=country,
+            selected_crop=crop
         )
 
     except Exception as e:
         return f"Error: {str(e)}"
 
-# ===== RENDER DEPLOY FIX =====
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
