@@ -17,21 +17,15 @@
             background: white;
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            width: 400px;
+            width: 420px;
             text-align: center;
         }
 
-        h1 {
-            color: #ff416c;
-        }
-
-        input {
+        select, input {
             width: 90%;
             padding: 10px;
             margin: 8px 0;
             border-radius: 8px;
-            border: 1px solid #ccc;
         }
 
         button {
@@ -40,25 +34,11 @@
             padding: 10px;
             border: none;
             border-radius: 8px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #ff4b2b;
-        }
-
-        .result {
-            margin-top: 15px;
-            font-size: 18px;
         }
 
         img {
             margin-top: 15px;
             max-width: 100%;
-        }
-
-        .error {
-            color: red;
         }
     </style>
 </head>
@@ -71,24 +51,27 @@
 
     <form action="/predict" method="POST">
 
-        <input type="number" name="rainfall" placeholder="Rainfall (mm)" required>
+        <select name="country" required>
+            {% for c in countries %}
+            <option value="{{c}}" {% if c == selected_country %}selected{% endif %}>{{c}}</option>
+            {% endfor %}
+        </select>
 
-        <input type="number" name="pesticide" placeholder="Pesticide (tonnes)" required>
+        <select name="crop" required>
+            {% for c in crops %}
+            <option value="{{c}}" {% if c == selected_crop %}selected{% endif %}>{{c}}</option>
+            {% endfor %}
+        </select>
 
-        <input type="number" name="temperature" placeholder="Temperature (°C)" required>
+        <input type="number" name="rainfall" placeholder="Rainfall" required>
+        <input type="number" name="pesticide" placeholder="Pesticide" required>
+        <input type="number" name="temperature" placeholder="Temperature" required>
 
-        <button type="submit">Predict Yield</button>
-
+        <button type="submit">Predict</button>
     </form>
 
-    {% if error %}
-        <p class="error">{{ error }}</p>
-    {% endif %}
-
     {% if prediction %}
-        <div class="result">
-            <strong>Predicted Yield:</strong> {{ prediction }}
-        </div>
+        <h3>Prediction: {{ prediction }}</h3>
     {% endif %}
 
     {% if graph_url %}
