@@ -2,37 +2,100 @@
 <html>
 <head>
     <title>Crop Yield Prediction</title>
-</head>
-<body style="background:#d4f4c4; font-family:Arial; padding:20px;">
 
-    <h1>🌾 Crop Yield Prediction</h1>
+    <style>
+        body {
+            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+            font-family: Arial;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #ff416c;
+        }
+
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background: #ff416c;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #ff4b2b;
+        }
+
+        .result {
+            margin-top: 15px;
+            font-size: 18px;
+        }
+
+        img {
+            margin-top: 15px;
+            max-width: 100%;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🌾 Crop Yield Predictor</h1>
 
     <form action="/predict" method="POST">
 
-        <label>Rainfall:</label><br>
-        <input type="number" name="rainfall" required><br><br>
+        <input type="number" name="rainfall" placeholder="Rainfall (mm)" required>
 
-        <label>Pesticide:</label><br>
-        <input type="number" name="pesticide" required><br><br>
+        <input type="number" name="pesticide" placeholder="Pesticide (tonnes)" required>
 
-        <label>Temperature:</label><br>
-        <input type="number" name="temperature" required><br><br>
+        <input type="number" name="temperature" placeholder="Temperature (°C)" required>
 
-        <button type="submit">Predict</button>
+        <button type="submit">Predict Yield</button>
+
     </form>
 
     {% if error %}
-        <p style="color:red;">{{ error }}</p>
+        <p class="error">{{ error }}</p>
     {% endif %}
 
     {% if prediction %}
-        <h2>Prediction: {{ prediction }}</h2>
+        <div class="result">
+            <strong>Predicted Yield:</strong> {{ prediction }}
+        </div>
     {% endif %}
 
     {% if graph_url %}
-        <h3>Graph:</h3>
         <img src="data:image/png;base64,{{ graph_url }}">
     {% endif %}
+
+</div>
 
 </body>
 </html>
