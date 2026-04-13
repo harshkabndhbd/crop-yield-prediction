@@ -1,100 +1,86 @@
-from flask import Flask, request, render_template
-import pickle
+from flask import Flask, render_template, request
 import pandas as pd
+import numpy as np
+import pickle
+import os
 import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
-import zipfile
-import os
 
 app = Flask(__name__)
 
-# -------------------------------
-# 📦 Extract model.zip if needed
-# -------------------------------
-if not os.path.exists('model/model.pkl'):
-    with zipfile.ZipFile('model/model.zip', 'r') as zip_ref:
-        zip_ref.extractall('model')
+# =========================
+# LOAD MODEL + DATA
+# =========================
 
-# -------------------------------
-# 🔮 Load model and columns
-# -------------------------------
-model = pickle.load(open('model/model.pkl', 'rb'))
-model_columns = pickle.load(open('model/columns.pkl', 'rb'))
+# Get base directory (IMPORTANT for Render)
+base_dir = os.path.dirname(os.path.abspath(__file__))
 
-# -------------------------------
-# 📊 Load dataset
-# -------------------------------
-df = pd.read_csv('data/yield_df.csv')
+# Load model
+model_path = os.path.join(base_dir, 'model', 'model.pkl')
+model = pickle.load(open(model_path, 'rb'))
 
+# Load dataset
+data_path = os.path.join(base_dir, 'data', 'yield_df.csv')
+df = pd.read_csv(data_path)
+
+# Get unique values for dropdown
 countries = sorted(df['Area'].unique())
 crops = sorted(df['Item'].unique())
 
-# -------------------------------
-# 🏠 Home route
-# -------------------------------
+# =========================
+# HOME PAGE
+# =========================
+
 @app.route('/')
 def home():
     return render_template('index.html', countries=countries, crops=crops)
 
-# -------------------------------
-# 🔮 Prediction route
-# -------------------------------
+# =========================
+# PREDICTION
+# =========================
+
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        year = float(request.form['year'])
-        rainfall = float(request.form['rainfall'])
-        pesticides = float(request.form['pesticides'])
-        temp = float(request.form['temperature'])
         country = request.form['country']
         crop = request.form['crop']
+        rainfall = float(request.form['rainfall'])
+        pesticide = float(request.form['pesticide'])
+        temperature = float(request.form['temperature'])
 
-        input_dict = {col: 0 for col in model_columns}
+        # Dummy encoding (basic)
+        input_data = np.array([[rainfall, pesticide, temperature]])
 
-        input_dict['Year'] = year
-        input_dict['average_rain_fall_mm_per_year'] = rainfall
-        input_dict['pesticides_tonnes'] = pesticides
-        input_dict['avg_temp'] = temp
+        prediction = model.predict(input_data)[0]
 
-        input_dict[f'Area_{country}'] = 1
-        input_dict[f'Item_{crop}'] = 1
-
-        input_df = pd.DataFrame([input_dict])
-
-        prediction = model.predict(input_df)[0]
-
-        # -------------------------------
-        # 📊 Graph (Predicted vs Average)
-        # -------------------------------
-        avg_yield = df['hg/ha_yield'].mean()
-
+        # =========================
+        # GRAPH
+        # =========================
         plt.figure()
-        plt.bar(['Predicted', 'Average'], [prediction, avg_yield])
-        plt.title("Yield Comparison")
+        plt.bar(['Yield'], [prediction])
+        plt.title('Predicted Yield')
 
         img = BytesIO()
         plt.savefig(img, format='png')
         img.seek(0)
+        graph_url = base64.b64encode(img.getvalue()).decode()
 
-        plot_url = base64.b64encode(img.getvalue()).decode()
-        plt.close()
-
-        return render_template('index.html',
-                               countries=countries,
-                               crops=crops,
-                               prediction_text=f'Predicted Yield: {round(prediction,2)}',
-                               plot_url=plot_url)
+        return render_template(
+            'index.html',
+            prediction=round(prediction, 2),
+            countries=countries,
+            crops=crops,
+            graph_url=graph_url
+        )
 
     except Exception as e:
-        return render_template('index.html',
-                               countries=countries,
-                               crops=crops,
-                               prediction_text=f'Error: {str(e)}')
+        return str(e)
 
-# -------------------------------
-# 🚀 Run app (Render compatible)
-# -------------------------------
+# =========================
+# RUN APP (IMPORTANT FOR RENDER)
+# =========================
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port) 
+    app.run(host="0.0.0.0", port=port)
