@@ -31,7 +31,12 @@ def predict():
 
         # Graph
         plt.figure()
-        plt.bar(['Yield'], [prediction])
+
+labels = ['Rainfall', 'Pesticide', 'Temperature', 'Yield']
+values = [rainfall, pesticide, temperature, prediction]
+
+plt.bar(labels, values)
+plt.title("Input vs Predicted Yield")
         plt.title("Predicted Yield")
 
         img = BytesIO()
