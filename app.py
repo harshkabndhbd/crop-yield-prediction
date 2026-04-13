@@ -17,11 +17,10 @@ def predict():
         pesticide = request.form.get('pesticide')
         temperature = request.form.get('temperature')
 
-        # Check empty
+        # Validate input
         if not rainfall or not pesticide or not temperature:
             return render_template('index.html', error="Please fill all fields")
 
-        # Convert
         rainfall = float(rainfall)
         pesticide = float(pesticide)
         temperature = float(temperature)
@@ -29,15 +28,14 @@ def predict():
         # Simple prediction logic
         prediction = (rainfall * 2) + (pesticide * 3) + (temperature * 5)
 
-        # Graph
+        # ===== GRAPH =====
         plt.figure()
 
-labels = ['Rainfall', 'Pesticide', 'Temperature', 'Yield']
-values = [rainfall, pesticide, temperature, prediction]
+        labels = ['Rainfall', 'Pesticide', 'Temperature', 'Yield']
+        values = [rainfall, pesticide, temperature, prediction]
 
-plt.bar(labels, values)
-plt.title("Input vs Predicted Yield")
-        plt.title("Predicted Yield")
+        plt.bar(labels, values)
+        plt.title("Input vs Predicted Yield")
 
         img = BytesIO()
         plt.savefig(img, format='png')
@@ -53,6 +51,7 @@ plt.title("Input vs Predicted Yield")
     except Exception as e:
         return f"Error: {str(e)}"
 
+# ===== RENDER DEPLOY FIX =====
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
