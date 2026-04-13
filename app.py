@@ -13,23 +13,22 @@ app = Flask(__name__)
 # LOAD MODEL + DATA
 # =========================
 
-# Get base directory (IMPORTANT for Render)
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Load model
 model_path = os.path.join(base_dir, 'model', 'model.pkl')
-model = pickle.load(open(model_path, 'rb'))
+with open(model_path, "rb") as f:
+    model = pickle.load(f)
 
 # Load dataset
 data_path = os.path.join(base_dir, 'data', 'yield_df.csv')
 df = pd.read_csv(data_path)
 
-# Get unique values for dropdown
 countries = sorted(df['Area'].unique())
 crops = sorted(df['Item'].unique())
 
 # =========================
-# HOME PAGE
+# HOME
 # =========================
 
 @app.route('/')
@@ -37,26 +36,22 @@ def home():
     return render_template('index.html', countries=countries, crops=crops)
 
 # =========================
-# PREDICTION
+# PREDICT
 # =========================
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        country = request.form['country']
-        crop = request.form['crop']
-        rainfall = float(request.form['rainfall'])
-        pesticide = float(request.form['pesticide'])
-        temperature = float(request.form['temperature'])
+        country = request.form.get('country')
+        crop = request.form.get('crop')
+        rainfall = float(request.form.get('rainfall'))
+        pesticide = float(request.form.get('pesticide'))
+        temperature = float(request.form.get('temperature'))
 
-        # Dummy encoding (basic)
         input_data = np.array([[rainfall, pesticide, temperature]])
-
         prediction = model.predict(input_data)[0]
 
-        # =========================
         # GRAPH
-        # =========================
         plt.figure()
         plt.bar(['Yield'], [prediction])
         plt.title('Predicted Yield')
@@ -75,10 +70,10 @@ def predict():
         )
 
     except Exception as e:
-        return str(e)
+        return f"Error: {str(e)}"
 
 # =========================
-# RUN APP (IMPORTANT FOR RENDER)
+# RUN (RENDER FIX)
 # =========================
 
 if __name__ == "__main__":
