@@ -9,20 +9,6 @@
 
     <form action="/predict" method="POST">
 
-        <label>Country:</label><br>
-        <select name="country" required>
-            {% for c in countries %}
-            <option value="{{c}}">{{c}}</option>
-            {% endfor %}
-        </select><br><br>
-
-        <label>Crop:</label><br>
-        <select name="crop" required>
-            {% for c in crops %}
-            <option value="{{c}}">{{c}}</option>
-            {% endfor %}
-        </select><br><br>
-
         <label>Rainfall:</label><br>
         <input type="number" name="rainfall" required><br><br>
 
@@ -34,6 +20,10 @@
 
         <button type="submit">Predict</button>
     </form>
+
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
 
     {% if prediction %}
         <h2>Prediction: {{ prediction }}</h2>
